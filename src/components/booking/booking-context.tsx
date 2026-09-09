@@ -1,0 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, View } from 'react-native';
+import { ParkingFacility, Vehicle } from '@/types/domain';
+import { formatBookingDateTime, formatDuration } from '@/utils/booking-time';
+import { formatCurrency, formatPricePerHour } from '@/utils/parking-formatters';
+import { colors, radius, spacing, typography } from '@/theme/tokens';
+
+export function BookingContext({ facility, vehicle, arrival, duration, amount }: { facility: ParkingFacility; vehicle?: Vehicle | null; arrival?: string | null; duration?: number; amount?: number }) { return <View style={styles.card}><View style={styles.icon}><Ionicons name="car-outline" size={19} color={colors.primary} /></View><View style={styles.copy}><Text numberOfLines={1} style={styles.name}>{facility.name}</Text><Text style={styles.meta}>{vehicle ? `${vehicle.brand} ${vehicle.model} · ${vehicle.registrationNumber}` : formatPricePerHour(facility.pricePerHour)}</Text>{arrival && duration ? <Text style={styles.meta}>{formatBookingDateTime(arrival)} · {formatDuration(duration)}</Text> : null}</View>{amount !== undefined ? <Text style={styles.amount}>{formatCurrency(amount)}</Text> : null}</View>; }
+const styles = StyleSheet.create({ card: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md, borderWidth: 1, borderColor: colors.borderSubtle, borderRadius: radius.md, backgroundColor: colors.surfaceMuted }, icon: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center', borderRadius: radius.sm, backgroundColor: colors.primarySoft }, copy: { flex: 1 }, name: { ...typography.bodyStrong, color: colors.textPrimary }, meta: { ...typography.caption, color: colors.textSecondary, marginTop: 2 }, amount: { ...typography.bodyStrong, color: colors.textPrimary } });

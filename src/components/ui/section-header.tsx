@@ -1,0 +1,4 @@
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { colors, spacing, typography } from '@/theme/tokens';
+export function SectionHeader({ title, actionLabel, onAction }: { title: string; actionLabel?: string; onAction?: () => void }) { return <View style={styles.container}><Text style={styles.title}>{title}</Text>{actionLabel ? <Pressable accessibilityRole="button" accessibilityLabel={actionLabel} onPress={onAction}><Text style={styles.action}>{actionLabel}</Text></Pressable> : null}</View>; }
+const styles = StyleSheet.create({ container: { minHeight: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, title: { ...typography.title3, color: colors.textPrimary }, action: { ...typography.bodySmall, color: colors.primary, fontWeight: '600', paddingVertical: spacing.xs, paddingLeft: spacing.sm } });

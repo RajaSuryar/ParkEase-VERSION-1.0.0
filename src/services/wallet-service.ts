@@ -1,0 +1,10 @@
+import { storageService } from '@/services/storage-service';
+import { Wallet, WalletTransaction } from '@/types/domain';
+const initialWallet: Wallet = { balance: 500, currency: 'INR', updatedAt: new Date().toISOString() };
+export const walletService = {
+  async getWallet() { return (await storageService.readJson<Wallet>(storageService.keys.wallet)) ?? initialWallet; },
+  async getBalance() { return (await this.getWallet()).balance; },
+  async getTransactions() { return (await storageService.readJson<WalletTransaction[]>(storageService.keys.walletTransactions)) ?? []; },
+  async creditWallet(amount: number, transaction: Omit<WalletTransaction, 'id' | 'amount' | 'currency' | 'direction' | 'createdAt' | 'status'>) { if (amount <= 0) throw new Error('Enter a valid amount.'); const wallet = await this.getWallet(); const item: WalletTransaction = { ...transaction, id: `wallet-${Date.now()}`, amount: Math.round(amount), currency: 'INR', direction: 'credit', status: 'success', createdAt: new Date().toISOString() }; const transactions = await this.getTransactions(); await Promise.all([storageService.writeJson(storageService.keys.wallet, { ...wallet, balance: wallet.balance + item.amount, updatedAt: item.createdAt }), storageService.writeJson(storageService.keys.walletTransactions, [item, ...transactions])]); return item; },
+  async debitWallet(amount: number, transaction: Omit<WalletTransaction, 'id' | 'amount' | 'currency' | 'direction' | 'createdAt' | 'status'>) { const wallet = await this.getWallet(); const rounded = Math.round(amount); if (rounded <= 0 || wallet.balance < rounded) throw new Error('Insufficient wallet balance.'); const item: WalletTransaction = { ...transaction, id: `wallet-${Date.now()}`, amount: rounded, currency: 'INR', direction: 'debit', status: 'success', createdAt: new Date().toISOString() }; const transactions = await this.getTransactions(); await Promise.all([storageService.writeJson(storageService.keys.wallet, { ...wallet, balance: wallet.balance - rounded, updatedAt: item.createdAt }), storageService.writeJson(storageService.keys.walletTransactions, [item, ...transactions])]); return item; },
+};

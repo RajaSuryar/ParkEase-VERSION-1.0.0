@@ -1,0 +1,7 @@
+import { useEffect, useState } from 'react';
+import { Animated, StyleSheet, Text, View } from 'react-native';
+import { AppLogo } from '@/components/brand/app-logo';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import { colors, spacing, typography } from '@/theme/tokens';
+export function AppSplash() { const [opacity] = useState(() => new Animated.Value(0)); const [scale] = useState(() => new Animated.Value(0.94)); const reducedMotion = useReducedMotion(); useEffect(() => { if (reducedMotion) { opacity.setValue(1); scale.setValue(1); return; } const animation = Animated.parallel([Animated.timing(opacity, { toValue: 1, duration: 260, useNativeDriver: true }), Animated.spring(scale, { toValue: 1, useNativeDriver: true, friction: 9 })]); animation.start(); return () => animation.stop(); }, [opacity, reducedMotion, scale]); return <View style={styles.screen}><Animated.View style={[styles.brand, { opacity, transform: [{ scale }] }]}><AppLogo size={88} /><Text style={styles.name}>ParkEase</Text><Text style={styles.tagline}>Parking made effortless.</Text></Animated.View></View>; }
+const styles = StyleSheet.create({ screen: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }, brand: { alignItems: 'center', gap: spacing.md }, name: { ...typography.title1, color: colors.textPrimary }, tagline: { ...typography.body, color: colors.textSecondary } });

@@ -1,0 +1,9 @@
+import { parkingSessionConfig } from '@/config/parking-session';
+import { Booking, BookingTemporalStatus, ParkingFacility } from '@/types/domain';
+
+export function getBookingTemporalStatus(booking: Pick<Booking, 'entryTime' | 'exitTime'>, now = new Date()): BookingTemporalStatus { const current = now.getTime(); const entry = new Date(booking.entryTime).getTime(); const exit = new Date(booking.exitTime).getTime(); if (current < entry) return 'upcoming'; if (current >= exit) return 'expired'; return exit - current <= parkingSessionConfig.endingSoonMinutes * 60_000 ? 'endingSoon' : 'active'; }
+export function getRemainingMinutes(booking: Pick<Booking, 'exitTime'>, now = new Date()) { return Math.max(0, Math.ceil((new Date(booking.exitTime).getTime() - now.getTime()) / 60_000)); }
+export function formatRemainingTime(minutes: number) { if (minutes <= 0) return 'Parking time ended'; if (minutes < 60) return `${minutes} min remaining`; return `${Math.floor(minutes / 60)}h ${minutes % 60}m remaining`; }
+export function getSessionProgress(booking: Pick<Booking, 'entryTime' | 'exitTime'>, now = new Date()) { const start = new Date(booking.entryTime).getTime(); const end = new Date(booking.exitTime).getTime(); return Math.max(0, Math.min(1, (now.getTime() - start) / Math.max(1, end - start))); }
+export function getOverstayMinutes(booking: Pick<Booking, 'exitTime'>, now = new Date()) { return Math.max(0, Math.floor((now.getTime() - new Date(booking.exitTime).getTime()) / 60_000)); }
+export function canExtendBooking(booking: Booking, facility: ParkingFacility | null, now = new Date()) { if (!facility || booking.status === 'cancelled' || booking.status === 'completed') return false; const temporalStatus = getBookingTemporalStatus(booking, now); return temporalStatus === 'active' || temporalStatus === 'endingSoon'; }

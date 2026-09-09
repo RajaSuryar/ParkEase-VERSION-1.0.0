@@ -1,0 +1,4 @@
+import { StyleSheet, View } from 'react-native';
+import { colors, radius } from '@/theme/tokens';
+export function QrPass({ value, size = 176 }: { value: string; size?: number }) { const cells = Array.from({ length: 121 }, (_, index) => ((value.charCodeAt(index % value.length) + index * 7 + Math.floor(index / 11) * 3) % 5) < 2); return <View accessibilityLabel={`QR parking pass for ${value}`} style={styles.frame}><View style={[styles.grid, { width: size, height: size }]}>{cells.map((filled, index) => <View key={index} style={[styles.cell, filled && styles.filled]} />)}</View></View>; }
+const styles = StyleSheet.create({ frame: { padding: 12, borderRadius: radius.lg, backgroundColor: colors.surface }, grid: { flexDirection: 'row', flexWrap: 'wrap' }, cell: { width: '9.09%', height: '9.09%', backgroundColor: colors.surface }, filled: { backgroundColor: colors.textPrimary } });

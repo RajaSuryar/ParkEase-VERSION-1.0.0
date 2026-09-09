@@ -1,0 +1,12 @@
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardSafeScrollView } from '@/components/layout/keyboard-safe-scroll-view';
+import { FormTextInput } from '@/components/ui/form-text-input';
+import { PrimaryButton } from '@/components/ui/primary-button';
+import { authService } from '@/services/auth-service';
+import { useAppStore } from '@/store/app-store';
+import { colors, spacing, typography } from '@/theme/tokens';
+export default function EditProfileScreen() { const session = useAppStore((state) => state.session); const setSession = useAppStore((state) => state.setSession); const [name, setName] = useState(session?.user.name ?? ''); const [email, setEmail] = useState(session?.user.email ?? ''); const [error, setError] = useState(''); const [saving, setSaving] = useState(false); const save = async () => { setSaving(true); try { const updated = await authService.updateProfile(name, email); setSession(updated); router.back(); } catch { setError('We could not update your profile. Please try again.'); } finally { setSaving(false); } }; return <SafeAreaView style={styles.screen}><KeyboardSafeScrollView contentContainerStyle={styles.content}><Text style={styles.title}>Edit Profile</Text><View style={styles.avatar}><Text style={styles.initial}>{name.trim().charAt(0).toUpperCase() || 'P'}</Text></View><FormTextInput label="Full name" value={name} onChangeText={setName} placeholder="Your name" error={error} /><FormTextInput label="Email address" value={email} onChangeText={setEmail} placeholder="name@example.com" keyboardType="email-address" autoCapitalize="none" /><Text style={styles.phone}>Verified mobile number · {session?.user.phone ?? '—'}</Text><PrimaryButton label="Save Changes" isLoading={saving} onPress={() => void save()} /></KeyboardSafeScrollView></SafeAreaView>; }
+const styles = StyleSheet.create({ screen: { flex: 1, backgroundColor: colors.background }, content: { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxxl }, title: { ...typography.title1, color: colors.textPrimary }, avatar: { alignSelf: 'center', width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary }, initial: { ...typography.title1, color: colors.textOnPrimary }, phone: { ...typography.bodySmall, color: colors.textSecondary } });

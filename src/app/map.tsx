@@ -1,0 +1,25 @@
+import { Ionicons } from '@expo/vector-icons';
+import { Href, router } from 'expo-router';
+import { useMemo, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ParkingMapCanvas } from '@/components/map/parking-map-canvas';
+import { ParkingPreviewSheet } from '@/components/map/parking-preview-sheet';
+import { SearchBar } from '@/components/ui/search-bar';
+import { useParkingDiscovery } from '@/hooks/use-parking-discovery';
+import { locationService } from '@/services/location-service';
+import { useAppStore } from '@/store/app-store';
+import { ParkingFacility } from '@/types/domain';
+import { getParkingResults } from '@/utils/parking-results';
+import { colors, radius, shadows, spacing, typography } from '@/theme/tokens';
+
+export default function MapScreen() {
+  const { facilities, refresh } = useParkingDiscovery();
+  const { destination, locationPermission, parkingFilters, parkingSortOption } = useAppStore();
+  const [selected, setSelected] = useState<ParkingFacility | null>(null);
+  const [notice, setNotice] = useState(destination ? `Showing parking near ${destination.name}` : locationPermission === 'granted' ? '' : 'Enable location for parking closest to you');
+  const visibleFacilities = useMemo(() => getParkingResults(facilities, parkingFilters, parkingSortOption), [facilities, parkingFilters, parkingSortOption]);
+  const recenter = async () => { if (locationPermission !== 'granted') { setNotice('Enable location from Settings to recenter the map.'); return; } const coordinate = await locationService.getCurrentCoordinate(); setNotice(coordinate ? 'Centered on your location' : "We couldn't determine your current location."); };
+  return <View style={styles.screen}><ParkingMapCanvas facilities={visibleFacilities} selectedId={selected?.id} onSelect={setSelected} /><SafeAreaView edges={['top']} style={styles.top}><View style={styles.topRow}><Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => router.back()} style={styles.roundButton}><Ionicons name="arrow-back" size={20} color={colors.textPrimary} /></Pressable><View style={styles.search}><SearchBar placeholder="Search area or destination" onPress={() => router.push('/search' as Href)} /></View></View><View style={styles.controls}><View style={styles.toggle}><View style={styles.activeToggle}><Ionicons name="map-outline" size={15} color={colors.textOnPrimary} /><Text style={styles.activeToggleText}>Map</Text></View><Pressable accessibilityRole="button" onPress={() => router.replace('/results' as Href)} style={styles.listToggle}><Ionicons name="list-outline" size={15} color={colors.textSecondary} /><Text style={styles.listToggleText}>List</Text></Pressable></View><Pressable accessibilityRole="button" onPress={() => void refresh()} style={styles.areaButton}><Text style={styles.areaButtonText}>Search this area · {visibleFacilities.length}</Text></Pressable></View></SafeAreaView><View style={styles.floating}><Pressable accessibilityRole="button" accessibilityLabel="Recenter map" onPress={() => void recenter()} style={styles.roundButton}><Ionicons name="locate" size={20} color={colors.primary} /></Pressable>{notice ? <View style={styles.notice}><Text style={styles.noticeText}>{notice}</Text></View> : null}</View>{selected ? <ParkingPreviewSheet facility={selected} /> : null}</View>;
+}
+const styles = StyleSheet.create({ screen: { flex: 1, backgroundColor: colors.mapBackground }, top: { paddingHorizontal: spacing.lg }, topRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, search: { flex: 1 }, roundButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: radius.full, backgroundColor: colors.surface, ...shadows.floating }, controls: { marginTop: spacing.md, alignItems: 'center', gap: spacing.md }, toggle: { flexDirection: 'row', padding: 4, borderRadius: radius.full, backgroundColor: colors.surface, ...shadows.floating }, activeToggle: { minHeight: 34, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: spacing.md, borderRadius: radius.full, backgroundColor: colors.primary }, activeToggleText: { ...typography.captionStrong, color: colors.textOnPrimary }, listToggle: { minHeight: 34, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: spacing.md }, listToggleText: { ...typography.captionStrong, color: colors.textSecondary }, areaButton: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.full, backgroundColor: colors.surface, ...shadows.floating }, areaButtonText: { ...typography.captionStrong, color: colors.primary }, floating: { flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end', padding: spacing.lg, gap: spacing.sm }, notice: { maxWidth: 230, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.md, backgroundColor: colors.surface, ...shadows.floating }, noticeText: { ...typography.caption, color: colors.textSecondary } });

@@ -1,0 +1,48 @@
+# Dependencies and package-manager caches
+node_modules/
+.npm-cache/
+
+# Expo and generated bundles
+.expo/
+.expo-shared/
+.expo-cache/
+dist/
+web-build/
+build/
+coverage/
+
+# Local environment files (safe templates remain trackable)
+.env
+.env.*
+!.env.example
+
+# Native build output and signing material
+/android/
+/ios/
+*.keystore
+*.jks
+*.p8
+*.p12
+*.pem
+*.key
+*.cer
+*.crt
+*.mobileprovision
+
+# Local tooling, logs and temporary artifacts
+.vscode/
+work/
+outputs/
+*.log
+*.tmp
+*.temp
+*.tsbuildinfo
+.metro-health-check*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
